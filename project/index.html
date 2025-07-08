@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Notes App</title>
+  <meta name="theme-color" content="#0d6efd">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f5f7fa;
+    }
+    .noteCard {
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+      from {opacity: 0;}
+      to {opacity: 1;}
+    }
+    .fab {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 100;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      font-size: 28px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body>
+  <div class="container py-3">
+    <h2 class="text-center mb-3">📒 My Notes</h2>
+
+    <!-- Search -->
+    <input type="text" class="form-control mb-3" id="searchTxt" placeholder="🔍 Search your notes...">
+
+    <!-- Notes Display Area -->
+    <div id="notes" class="row g-2"></div>
+  </div>
+
+  <!-- Hidden Add Note Input Modal -->
+  <div class="modal fade" id="addNoteModal" tabindex="-1" aria-labelledby="addNoteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">✍️ Add a New Note</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <textarea id="addTxt" class="form-control" rows="4" placeholder="Write your note here..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button id="addBtn" class="btn btn-primary">Save Note</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Action Button -->
+  <button class="btn btn-primary fab" data-bs-toggle="modal" data-bs-target="#addNoteModal">+</button>
+
+  <!-- Bootstrap + JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Notes App Logic -->
+  <script>
+    console.log("Notes App loaded");
+    showNotes();
+
+    document.getElementById("addBtn").addEventListener("click", function () {
+      let addTxt = document.getElementById("addTxt");
+      let notes = localStorage.getItem("notes");
+      let notesObj = notes ? JSON.parse(notes) : [];
+
+      if (addTxt.value.trim() === "") {
+        alert("Note cannot be empty!");
+        return;
+      }
+
+      notesObj.push(addTxt.value.trim());
+      localStorage.setItem("notes", JSON.stringify(notesObj));
+      addTxt.value = "";
+      bootstrap.Modal.getInstance(document.getElementById('addNoteModal')).hide();
+      showNotes();
+    });
+
+    function showNotes() {
+      let notes = localStorage.getItem("notes");
+      let notesObj = notes ? JSON.parse(notes) : [];
+      let html = "";
+
+      notesObj.forEach(function (element, index) {
+        html += `
+          <div class="col-12">
+            <div class="card noteCard shadow-sm">
+              <div class="card-body">
+                <h5 class="card-title">Note ${index + 1}</h5>
+                <p class="card-text">${element}</p>
+                <button class="btn btn-sm btn-danger" onclick="deleteNote(${index})">Delete</button>
+              </div>
+            </div>
+          </div>`;
+      });
+
+      let notesElm = document.getElementById("notes");
+      notesElm.innerHTML = notesObj.length ? html : `<p class="text-muted text-center">Nothing to show! Add some notes.</p>`;
+    }
+
+    function deleteNote(index) {
+      let notes = localStorage.getItem("notes");
+      let notesObj = notes ? JSON.parse(notes) : [];
+
+      notesObj.splice(index, 1);
+      localStorage.setItem("notes", JSON.stringify(notesObj));
+      showNotes();
+    }
+
+    document.getElementById("searchTxt").addEventListener("input", function () {
+      let inputVal = this.value.toLowerCase();
+      let noteCards = document.getElementsByClassName("noteCard");
+      Array.from(noteCards).forEach(function (element) {
+        let cardTxt = element.getElementsByTagName("p")[0].innerText;
+        element.style.display = cardTxt.toLowerCase().includes(inputVal) ? "block" : "none";
+      });
+    });
+  </script>
+</body>
+</html>

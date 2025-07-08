@@ -1,0 +1,23 @@
+body {
+  background-color: #f8f9fa;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+textarea {
+  resize: none;
+  font-size: 16px;
+}
+
+#notes-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.note-item {
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 10px 15px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
