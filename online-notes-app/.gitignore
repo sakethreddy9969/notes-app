@@ -1,0 +1,50 @@
+# Laravel specific
+/vendor
+/node_modules
+/public/storage
+/storage/*.key
+.env
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+
+# Laravel IDE Helper
+.phpstorm.meta.php
+_ide_helper.php
+_ide_helper_models.php
+
+# System files
+.DS_Store
+Thumbs.db
+*.log
+
+# Windows / macOS
+desktop.ini
+*.sublime-workspace
+*.sublime-project
+
+# Composer dependencies
+composer.lock
+
+# PHPStorm and VS Code
+.idea
+.vscode
+
+# Laravel Telescope
+storage/telescope
+
+# Cache
+bootstrap/cache/*
+!bootstrap/cache/.gitignore
+storage/app/public/*
+!storage/app/public/.gitignore
+storage/framework/cache/*
+!storage/framework/cache/.gitignore
+storage/framework/sessions/*
+!storage/framework/sessions/.gitignore
+storage/framework/views/*
+!storage/framework/views/.gitignore
+storage/logs/*
+!storage/logs/.gitignore
