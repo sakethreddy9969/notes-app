@@ -1,0 +1,9 @@
+body {
+  background: #f8f9fa;
+}
+.card {
+  border-radius: 12px;
+}
+#notesList {
+  margin-top: 1rem;
+} 
