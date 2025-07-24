@@ -25,9 +25,3 @@ The **Online Notes App** is a personal productivity tool built with **Laravel** 
 
 ---
 
-## 🚀 How to Run Locally
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/sakethreddy9969/notes-app.git
-   cd notes-app
