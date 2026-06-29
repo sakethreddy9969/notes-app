@@ -46,8 +46,10 @@
   </div>
 
   <script>
-    // Handle Public Note Load
-    const API_URL = 'http://localhost:8000/api';
+    // Handle Public Note Load: Use localhost when testing locally, otherwise use production HTTPS API.
+    const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+      ? 'http://localhost:8000/api'
+      : 'https://your-notes-api-backend.com/api'; // <-- Replace with your production Laravel HTTPS domain
 
     document.addEventListener('DOMContentLoaded', async () => {
       // Get Note ID from Query String

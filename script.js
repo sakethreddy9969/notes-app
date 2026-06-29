@@ -1,4 +1,7 @@
-const API_URL = 'http://localhost:8000/api';
+// Dynamic API URL: Use localhost when testing locally, otherwise use your deployed production HTTPS API.
+const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? 'http://localhost:8000/api'
+  : 'https://your-notes-api-backend.com/api'; // <-- Replace with your production Laravel HTTPS domain
 
 // --- Toast System ---
 function showToast(message, type = 'success') {
