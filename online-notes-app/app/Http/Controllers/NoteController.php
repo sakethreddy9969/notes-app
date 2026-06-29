@@ -10,13 +10,8 @@ class NoteController extends Controller
 {
     public function index()
     {
-        $notes = Note::where('user_id', Auth::id())->get();
-        return view('notes.index', compact('notes'));
-    }
-
-    public function create()
-    {
-        return view('notes.create');
+        $notes = Note::where('user_id', Auth::id())->orderBy('created_at', 'desc')->get();
+        return response()->json($notes);
     }
 
     public function store(Request $request)
@@ -28,7 +23,7 @@ class NoteController extends Controller
             'visibility' => 'required|in:public,private'
         ]);
 
-        Note::create([
+        $note = Note::create([
             'user_id' => Auth::id(),
             'title' => $request->title,
             'content' => $request->content,
@@ -36,24 +31,25 @@ class NoteController extends Controller
             'visibility' => $request->visibility
         ]);
 
-        return redirect()->route('notes.index')->with('success', 'Note created successfully!');
+        return response()->json([
+            'message' => 'Note created successfully!',
+            'note' => $note
+        ], 201);
     }
 
     public function show(Note $note)
     {
-        $this->authorize('view', $note);
-        return view('notes.show', compact('note'));
-    }
-
-    public function edit(Note $note)
-    {
-        $this->authorize('update', $note);
-        return view('notes.edit', compact('note'));
+        if ($note->user_id !== Auth::id() && $note->visibility !== 'public') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+        return response()->json($note);
     }
 
     public function update(Request $request, Note $note)
     {
-        $this->authorize('update', $note);
+        if ($note->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
 
         $request->validate([
             'title' => 'required|max:255',
@@ -64,14 +60,32 @@ class NoteController extends Controller
 
         $note->update($request->all());
 
-        return redirect()->route('notes.index')->with('success', 'Note updated successfully!');
+        return response()->json([
+            'message' => 'Note updated successfully!',
+            'note' => $note
+        ]);
     }
 
     public function destroy(Note $note)
     {
-        $this->authorize('delete', $note);
+        if ($note->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
         $note->delete();
 
-        return redirect()->route('notes.index')->with('success', 'Note deleted successfully!');
+        return response()->json([
+            'message' => 'Note deleted successfully!'
+        ]);
+    }
+
+    // Public route to view a public note by ID
+    public function showPublic($id)
+    {
+        $note = Note::findOrFail($id);
+        if ($note->visibility !== 'public') {
+            return response()->json(['message' => 'Note is private'], 403);
+        }
+        return response()->json($note);
     }
 }

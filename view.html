@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>View Shared Note | Industrial Notes App</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body class="d-flex justify-content-center align-items-center min-vh-100">
+  
+  <div class="public-viewer">
+    <div class="glass-panel public-viewer-card">
+      <div id="viewerLoadingState">
+        <div class="skeleton mb-3" style="height: 35px; width: 60%;"></div>
+        <div class="skeleton mb-4" style="height: 150px; width: 100%;"></div>
+        <div class="skeleton" style="height: 20px; width: 30%;"></div>
+      </div>
+      
+      <div id="viewerErrorState" style="display: none; text-align: center; padding: 40px 0;">
+        <i class="fa-solid fa-triangle-exclamation fa-3x mb-3 text-danger"></i>
+        <h4 id="errorMessage">Unable to load note</h4>
+        <p class="text-muted">This note might be private, deleted, or the link is incorrect.</p>
+        <a href="login.html" class="btn-premium mt-3">Go to Login</a>
+      </div>
+
+      <div id="viewerContent" style="display: none;">
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary">
+          <h2 id="noteTitle" style="font-weight: 700; margin: 0; background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Shared Note</h2>
+          <span class="note-badge public"><i class="fa-solid fa-globe"></i> Public</span>
+        </div>
+        
+        <div id="noteBody" class="note-content my-4" style="font-size: 16px; min-height: 100px;"></div>
+        
+        <div id="noteTags" class="note-tags mb-4"></div>
+        
+        <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top border-secondary">
+          <div class="note-date" id="noteDate">Saved on ...</div>
+          <a href="login.html" class="btn-premium-outline" style="text-decoration: none; padding: 8px 16px; font-size: 14px;">
+            <i class="fa-solid fa-pen-nib"></i> Create Your Own Notes
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Handle Public Note Load
+    const API_URL = 'http://localhost:8000/api';
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Get Note ID from Query String
+      const urlParams = new URLSearchParams(window.location.search);
+      const noteId = urlParams.get('id');
+
+      const loader = document.getElementById('viewerLoadingState');
+      const errorDiv = document.getElementById('viewerErrorState');
+      const errorMsg = document.getElementById('errorMessage');
+      const contentDiv = document.getElementById('viewerContent');
+
+      // Theme restore
+      if (localStorage.getItem('theme') === 'light') {
+        document.body.classList.add('light-mode');
+      }
+
+      if (!noteId) {
+        loader.style.display = 'none';
+        errorDiv.style.display = 'block';
+        errorMsg.textContent = 'Invalid shared link';
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_URL}/notes/public/${noteId}`);
+        if (!response.ok) {
+          throw new Error(response.status === 404 ? 'Note not found' : 'Note is private or unauthorized');
+        }
+        
+        const note = await response.json();
+        
+        // Render content
+        document.getElementById('noteTitle').textContent = note.title;
+        document.getElementById('noteBody').innerHTML = note.content;
+        
+        // Tags
+        const tagsContainer = document.getElementById('noteTags');
+        tagsContainer.innerHTML = '';
+        if (note.tags) {
+          const tags = note.tags.split(',').map(t => t.trim()).filter(Boolean);
+          tags.forEach(tag => {
+            const span = document.createElement('span');
+            span.className = 'tag-pill';
+            span.textContent = `#${tag}`;
+            tagsContainer.appendChild(span);
+          });
+        }
+        
+        // Date
+        document.getElementById('noteDate').textContent = `Shared on ${new Date(note.created_at || note.timestamp).toLocaleString()}`;
+        
+        // Toggle view
+        loader.style.display = 'none';
+        contentDiv.style.display = 'block';
+      } catch (err) {
+        loader.style.display = 'none';
+        errorDiv.style.display = 'block';
+        errorMsg.textContent = err.message || 'Unable to load note';
+      }
+    });
+  </script>
+</body>
+</html>

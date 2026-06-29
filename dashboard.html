@@ -3,181 +3,193 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Online Notes App</title>
+  <title>Dashboard | Industrial Notes App</title>
+  <!-- Outfit Font & Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet" />
-  <style>
-    body {
-      background-color: #f8f9fa;
-    }
-    .note-card {
-      border: 1px solid #dee2e6;
-      border-radius: 10px;
-      margin-bottom: 15px;
-      padding: 15px;
-    }
-    .tag {
-      background-color: #e0f7fa;
-      border-radius: 10px;
-      padding: 3px 10px;
-      margin-right: 5px;
-      font-size: 12px;
-    }
-    #editor-container {
-      height: 200px;
-    }
-    .navbar {
-      background-color: #ffffff;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-    .navbar-brand {
-      font-weight: bold;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css" />
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 </head>
 <body>
 
-  <!-- Top Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-light px-4 py-2">
-    <a class="navbar-brand" href="#">📒 Notes Dashboard</a>
-    <div class="ms-auto d-flex align-items-center gap-3">
-      <input type="text" id="searchInput" class="form-control" placeholder="Search notes...">
-      <button class="btn btn-outline-danger" onclick="logout()">Logout</button>
-    </div>
-  </nav>
+  <div class="dashboard-grid">
+    
+    <!-- Sidebar -->
+    <aside class="sidebar glass-panel">
+      <div class="sidebar-logo">
+        <i class="fa-solid fa-book-open"></i>
+        <span>Notes Board</span>
+      </div>
+      
+      <!-- User Profile Card -->
+      <div class="profile-card">
+        <div class="profile-name" id="userNameLabel">Loading...</div>
+        <div class="profile-email" id="userEmailLabel">Loading...</div>
+      </div>
+      
+      <!-- Actions / Nav -->
+      <div class="mb-4 d-flex flex-column gap-2">
+        <button class="btn-premium w-100" onclick="createNewNoteBtnClick()">
+          <i class="fa-solid fa-plus"></i> New Note
+        </button>
+        <button class="btn-premium-outline w-100 d-flex align-items-center justify-content-center gap-2" onclick="toggleTheme()">
+          <i class="fa-solid fa-circle-half-stroke"></i> Toggle Theme
+        </button>
+      </div>
 
-  <!-- Page Content -->
-  <div class="container py-4">
-    <div class="card mb-4">
-      <div class="card-body">
-        <input type="hidden" id="editingIndex" value="">
-        <input type="text" id="noteTitle" class="form-control mb-3" placeholder="Note Title" />
-        <div id="editor-container" class="mb-3"></div>
-        <input type="text" id="tagsInput" class="form-control mb-3" placeholder="Enter tags (comma separated)" />
-        <div class="form-check mb-3">
-          <input class="form-check-input" type="checkbox" id="isPublic">
-          <label class="form-check-label" for="isPublic">Make this note public</label>
+      <!-- Tag Filters Title -->
+      <h6 class="form-label mt-3 mb-2 px-1">Filter by Tag</h6>
+      <div class="tag-filter-list" id="tagFilterList">
+        <div class="tag-filter-item active" id="tagFilterAll" onclick="filterByTag('')">
+          <span>Show All</span>
+          <span class="tag-filter-badge" id="totalNotesBadge">0</span>
         </div>
-        <button class="btn btn-success" onclick="saveNote()">Save Note</button>
-        <button class="btn btn-secondary" onclick="cancelEdit()" style="display: none;" id="cancelEditBtn">Cancel Edit</button>
+        <!-- Dynamic tags go here -->
+      </div>
+      
+      <!-- Logout at bottom -->
+      <div class="mt-auto pt-4">
+        <button class="btn-danger-premium w-100" onclick="logout()">
+          <i class="fa-solid fa-right-from-bracket"></i> Logout
+        </button>
+      </div>
+    </aside>
+    
+    <!-- Main Notes Container -->
+    <main class="notes-container">
+      
+      <!-- Stats widgets row -->
+      <div class="stats-grid">
+        <div class="glass-panel stat-card">
+          <div class="stat-label">Total Notes</div>
+          <div class="stat-val" id="statTotal">0</div>
+        </div>
+        <div class="glass-panel stat-card">
+          <div class="stat-label">🔒 Private</div>
+          <div class="stat-val" id="statPrivate">0</div>
+        </div>
+        <div class="glass-panel stat-card">
+          <div class="stat-label">🌐 Public</div>
+          <div class="stat-val" id="statPublic">0</div>
+        </div>
+        <div class="glass-panel stat-card">
+          <div class="stat-label">🏷️ Tags</div>
+          <div class="stat-val" id="statTags">0</div>
+        </div>
+      </div>
+      
+      <!-- Search & Title -->
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <h2 style="font-weight: 700; margin-bottom: 0;">Workspace</h2>
+        <div class="search-wrapper mb-0" style="max-width: 400px; width: 100%;">
+          <i class="fa-solid fa-magnifying-glass search-icon"></i>
+          <input type="text" id="searchInput" class="form-control" placeholder="Search notes title, tags or content...">
+        </div>
+      </div>
+      
+      <!-- Editor Panel (Creates or edits notes) -->
+      <div class="glass-panel p-4 mb-4" id="editorPanel" style="display: none;">
+        <h4 class="mb-3" id="editorTitle">Create Note</h4>
+        <input type="hidden" id="editingNoteId" value="">
+        
+        <div class="mb-3">
+          <label for="noteTitle" class="form-label">Note Title</label>
+          <input type="text" id="noteTitle" class="form-control" placeholder="Ideas for Next Big Project..." />
+        </div>
+        
+        <div class="mb-3">
+          <label class="form-label">Content</label>
+          <div id="editor-container"></div>
+        </div>
+        
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="tagsInput" class="form-label">Tags (comma-separated)</label>
+            <input type="text" id="tagsInput" class="form-control" placeholder="work, ideas, todo" />
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="noteVisibility" class="form-label">Visibility</label>
+            <select id="noteVisibility" class="form-select">
+              <option value="private">🔒 Private (Only You)</option>
+              <option value="public">🌐 Public (Shareable Link)</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="d-flex justify-content-end gap-2 mt-2">
+          <button class="btn-premium-outline" onclick="closeEditorPanel()">Cancel</button>
+          <button class="btn-premium" onclick="saveNote()" id="saveNoteBtn">Save Note</button>
+        </div>
+      </div>
+      
+      <!-- Notes Grid -->
+      <div id="notesLoadingState" class="row">
+        <!-- Skeleton cards when fetching -->
+        <div class="col-md-6 col-lg-4 mb-4">
+          <div class="glass-panel note-card skeleton" style="height: 250px;"></div>
+        </div>
+        <div class="col-md-6 col-lg-4 mb-4">
+          <div class="glass-panel note-card skeleton" style="height: 250px;"></div>
+        </div>
+        <div class="col-md-6 col-lg-4 mb-4">
+          <div class="glass-panel note-card skeleton" style="height: 250px;"></div>
+        </div>
+      </div>
+      
+      <div id="emptyState" class="text-center py-5" style="display: none; color: var(--text-secondary);">
+        <i class="fa-regular fa-folder-open fa-3x mb-3 text-muted"></i>
+        <h4>No notes found</h4>
+        <p class="text-muted">Create a new note to start building your digital workspace.</p>
+        <button class="btn-premium mt-2" onclick="createNewNoteBtnClick()">
+          <i class="fa-solid fa-plus"></i> Create Note
+        </button>
+      </div>
+
+      <div class="notes-grid" id="notesList" style="display: none;"></div>
+      
+    </main>
+  </div>
+
+  <!-- Share Modal Dialog -->
+  <div class="modal-overlay" id="shareModal">
+    <div class="glass-panel modal-wrapper">
+      <div class="modal-header">
+        <h5 style="margin: 0; font-weight: 700;">Share Public Note</h5>
+        <button class="modal-close" onclick="closeShareModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="color: var(--text-secondary); font-size: 14px;">Anyone with this link can view this note. Private notes cannot be viewed via public links.</p>
+        <div class="copy-input-group">
+          <input type="text" id="shareLinkInput" class="form-control" readonly>
+          <button class="btn-premium" onclick="copyShareLink()">
+            <i class="fa-regular fa-copy"></i> Copy
+          </button>
+        </div>
       </div>
     </div>
-
-    <h4>Your Notes</h4>
-    <div id="notesList"></div>
   </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+  <script src="script.js"></script>
   <script>
+    // Initialize Quill Rich Text Editor
     const quill = new Quill('#editor-container', {
-      theme: 'snow'
+      theme: 'snow',
+      placeholder: 'Write your thoughts here...',
+      modules: {
+        toolbar: [
+          ['bold', 'italic', 'underline', 'code-block'],
+          [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+          ['clean']
+        ]
+      }
     });
-
-    let notes = [];
-
-    function saveNote() {
-      const title = document.getElementById('noteTitle').value;
-      const content = quill.root.innerHTML;
-      const tags = document.getElementById('tagsInput').value.split(',').map(t => t.trim()).filter(Boolean);
-      const isPublic = document.getElementById('isPublic').checked;
-      const editingIndex = document.getElementById('editingIndex').value;
-
-      if (!title.trim()) {
-        alert("Note title is required.");
-        return;
-      }
-
-      const note = { title, content, tags, isPublic, timestamp: new Date().toISOString() };
-
-      if (editingIndex === "") {
-        notes.push(note);
-      } else {
-        notes[editingIndex] = note;
-        document.getElementById('cancelEditBtn').style.display = 'none';
-        document.getElementById('editingIndex').value = "";
-      }
-
-      displayNotes();
-      clearForm();
-    }
-
-    function clearForm() {
-      document.getElementById('noteTitle').value = '';
-      quill.setContents([]);
-      document.getElementById('tagsInput').value = '';
-      document.getElementById('isPublic').checked = false;
-    }
-
-    function displayNotes(filtered = null) {
-      const notesList = document.getElementById('notesList');
-      notesList.innerHTML = '';
-
-      const toDisplay = filtered || notes;
-
-      toDisplay.forEach((note, index) => {
-        const card = document.createElement('div');
-        card.className = 'note-card';
-
-        card.innerHTML = `
-          <h5>${note.title}</h5>
-          <div class="mb-2">${note.content}</div>
-          <div class="mb-2">
-            ${note.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
-          </div>
-          <div class="d-flex justify-content-between">
-            <div><strong>${note.isPublic ? '🌐 Public' : '🔒 Private'}</strong></div>
-            <div>
-              <button class="btn btn-sm btn-primary me-1" onclick="editNote(${index})">Edit</button>
-              <button class="btn btn-sm btn-danger" onclick="deleteNote(${index})">Delete</button>
-            </div>
-          </div>
-          <small class="text-muted">Saved on ${new Date(note.timestamp).toLocaleString()}</small>
-        `;
-        notesList.appendChild(card);
-      });
-    }
-
-    function editNote(index) {
-      const note = notes[index];
-      document.getElementById('noteTitle').value = note.title;
-      quill.root.innerHTML = note.content;
-      document.getElementById('tagsInput').value = note.tags.join(', ');
-      document.getElementById('isPublic').checked = note.isPublic;
-      document.getElementById('editingIndex').value = index;
-      document.getElementById('cancelEditBtn').style.display = 'inline-block';
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function deleteNote(index) {
-      if (confirm("Are you sure you want to delete this note?")) {
-        notes.splice(index, 1);
-        displayNotes();
-      }
-    }
-
-    function cancelEdit() {
-      clearForm();
-      document.getElementById('editingIndex').value = "";
-      document.getElementById('cancelEditBtn').style.display = 'none';
-    }
-
-    document.getElementById('searchInput').addEventListener('input', function () {
-      const keyword = this.value.toLowerCase();
-      const filtered = notes.filter(note =>
-        note.title.toLowerCase().includes(keyword) ||
-        note.content.toLowerCase().includes(keyword) ||
-        note.tags.some(tag => tag.toLowerCase().includes(keyword))
-      );
-      displayNotes(filtered);
-    });
-
-    function logout() {
-      localStorage.removeItem("user");
-      alert("You have been logged out.");
-      window.location.href = "login.html"; // redirect to login
-    }
   </script>
 </body>
 </html>
