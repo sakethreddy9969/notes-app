@@ -1,4 +1,4 @@
-# 📒 Industrial Full-Stack Notes Application
+# 📒 Notes Application
 
 This project is a high-fidelity, production-grade full-stack Notes application. It uses a modern decoupled architecture, pairing a robust **PHP Laravel REST API** backend with a state-of-the-art **Glassmorphism Single Page Application (SPA)** frontend built with premium styling and animations.
 
